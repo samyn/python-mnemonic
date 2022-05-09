@@ -23,7 +23,7 @@ for _ in range(code_length):
     c1 = random.sample("ABCDEF0123456789",1)
     #print(c1)
     key_hexstr += c1[0]
-#key_hexstr = "912BF6D0C3FEB905E6BC79E76D45FBD4"
+#key_hexstr = "912BF6D0C3FE1111E6BC79E76D45FBD4"
 print(key_hexstr)
 """
 print("\n PLEASE INPUT PAIR OF DICE STEP BY STEP:")
@@ -37,8 +37,8 @@ pair_no = 0
 while p<=code_length:
     pair_no += 1
     """
-    dice1 = random.sample("012345",1)
-    dice2 = random.sample("012345",1)
+    dice1 = random.sample("123456",1)
+    dice2 = random.sample("123456",1)
     """
     print ("\nTRYING {0}/{1}... ".format(p,code_length))
     dice1 = input(" DICE1(1-6):")
@@ -71,13 +71,14 @@ while p<=code_length:
         print("PAIR[{0},{1}] B06[{2},{3}] B10[{4:2d}] IN 32-35, ABANDONED.".format(dice1[0],dice2[0],s1,s2,n10))
         print(dices)
 
-#key_hexstr = "912BF6D0C3FEB905E6BC79E76D45FBD4"
+
 print("\nROLLED DICES:",pair_no*2,"(",code_length*2,")")
 print("DCS: ",key_dice)
 print("SIX: ",key_base6)
 print("HEX: ",key_hexstr_space)
 print("HEX: ",key_hexstr)
 
+#key_hexstr = "912BF6D0C3FE1111E6BC79E76D45FBD4"
 print("\n SEEDS[12*/18/24]:"+length)
 print("\n  "+mnemo.to_mnemonic(unhexlify(key_hexstr)))
 print("\n KEY_BITS[128/192/256]:"+str(key_bits_length))
