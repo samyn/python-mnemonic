@@ -25,6 +25,9 @@ parser = argparse.ArgumentParser(description='Generate seeds from dice rolls.')
 parser.add_argument('--len', type=str, help='Seeds length LEN = 12/18/24 default 12', default='12')
 parser.add_argument('--dice', action='store_true', help='Use real dice rolls instead of random numbers')
 parser.add_argument('--hex', type=str, help='Use HEX string to generate seeds', default='')
+parser.add_argument('--seeds', action='store_true', help='Use seeds to generate hex keys')
+parser.add_argument('--encrypt', type=str, help='Encrypt given HEX string to generate seeds', default='')
+
 args = parser.parse_args()
 
 seeds_peers =  {"12": 128, '18':192, '24':256}
@@ -51,6 +54,60 @@ if args.hex:
         c16 = "{0:X}".format(n10)
         key_hex_space += "{0:4X}".format(n10 % 16)
         p += 1
+elif args.encrypt:
+    key_hex = args.encrypt
+    if not is_valid_hex(key_hex):
+        print("Hex string should be 0123456789ABCDEF format.")
+        sys.exit(0)
+    key_length = str(hex_peers[str(len(key_hex))])
+    key_bits_length = seeds_peers[key_length]
+    
+    p = 0
+
+    while p < len(key_hex):
+        n10=int(key_hex[p],16)
+        key_bin += "{0:04b}".format(n10%16)
+        key_dex += "{0:4d}".format(n10)
+        c16 = "{0:X}".format(n10)
+        key_hex_space += "{0:4X}".format(n10 % 16)
+        p += 1
+    data = unhexlify(key_hex)
+
+    passphrase1 = input("passphrase:")
+    passphrase2 = input("input passphrase again:")
+
+    if passphrase1 != passphrase2:
+        print("Passphrase not match.")
+        sys.exit(0)
+
+    # 最终环境里，需要将 b'1' 替换为一个可以被记住的字符串
+    passhash = hashlib.pbkdf2_hmac('sha256', passphrase1.encode(), b'1', 20480000)
+
+    # 按位异或操作
+    xor_result = bytes(a ^ b for a, b in zip(data, passhash))
+
+    print("Original key   :", data.hex())
+    print("Passphrase hash:", passhash.hex())
+    print("XOR result     :", xor_result.hex())
+
+    # 恢复原始数据
+    recovered_data = bytes(a ^ b for a, b in zip(xor_result, passhash))
+    print("Recovered key  :", recovered_data.hex())
+    key_hex = xor_result.hex()
+elif args.seeds:
+    key_length = args.len
+    seeds = input(" Seeds:")
+    words = seeds.split(" ")
+    key_length = str(len(words))
+    if key_length not in seeds_peers.keys():
+        print("Seeds length should be one of the following: [12, 18, 24], but it is not "+key_length)
+        sys.exit(0)
+
+    key_bits_length = seeds_peers[key_length]  
+
+    print(words)
+    key_hex = mnemo.to_entropy(words).hex()
+
 else:
     key_hex =""
     key_sen_space = ""
